@@ -23,7 +23,7 @@ export const answerUserQuestions = ai.defineFlow(
     outputSchema: z.string(),
     stream: true,
   },
-  async (input, streamingCallback) => {
+  async (input) => {
     const {stream, response} = ai.generateStream({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful assistant that answers questions about Hagaaty and Google Ads. Keep your answers concise and in Arabic.
@@ -32,14 +32,19 @@ export const answerUserQuestions = ai.defineFlow(
 
   Answer the following question:
   ${input.question}`,
-      streamingCallback,
     });
 
-    let answer = '';
+    // Although we return the stream, we wait for the full response to complete
+    // to ensure the flow doesn't exit prematurely in some environments.
+    let fullResponse = '';
     for await (const chunk of stream) {
-      answer += chunk.text;
+      fullResponse += chunk.text;
     }
     await response;
-    return answer;
+
+    // The function signature for a streaming flow expects a response that can be streamed.
+    // However, the actual streaming to the client is handled in the server action.
+    // Here, we just fulfill the contract by returning the full text.
+    return fullResponse;
   }
 );

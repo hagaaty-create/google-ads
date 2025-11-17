@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 
@@ -52,32 +52,31 @@ export function VirtualAssistant() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: Date.now(),
       role: 'user',
       content: data.question,
     };
-    const assistantMessage: Message = {
-      id: messages.length + 2,
-      role: 'assistant',
-      content: '',
-    };
-    setMessages(prev => [...prev, userMessage, assistantMessage]);
+
+    const assistantMessageId = Date.now() + 1;
+    
+    setMessages(prev => [...prev, userMessage, { id: assistantMessageId, role: 'assistant', content: '' }]);
     setIsLoading(true);
     form.reset();
 
     try {
-      const stream = await askVirtualAssistant(data.question);
-      if (typeof stream === 'object' && 'answer' in stream) {
-        // Handle non-streamed error response
+      const response = await askVirtualAssistant(data.question);
+
+      if ('error' in response) {
         setMessages(prev =>
           prev.map(msg =>
-            msg.id === assistantMessage.id ? { ...msg, content: stream.answer } : msg
+            msg.id === assistantMessageId ? { ...msg, content: response.error } : msg
           )
         );
+        setIsLoading(false);
         return;
       }
       
-      const reader = stream.getReader();
+      const reader = response.getReader();
       const decoder = new TextDecoder();
       let streamedContent = '';
 
@@ -95,21 +94,31 @@ export function VirtualAssistant() {
                 streamedContent += json.text;
                 setMessages(prev =>
                   prev.map(msg =>
-                    msg.id === assistantMessage.id ? { ...msg, content: streamedContent } : msg
+                    msg.id === assistantMessageId ? { ...msg, content: streamedContent } : msg
                   )
                 );
               }
+               if (json.error) {
+                streamedContent = json.error;
+                 setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === assistantMessageId ? { ...msg, content: streamedContent } : msg
+                  )
+                );
+                break;
+              }
             } catch (e) {
-              // Ignore parsing errors
+              console.error("Failed to parse stream chunk", e);
             }
           }
         }
       }
     } catch (error) {
+      console.error("Error during form submission or streaming:", error);
       const errorMessageContent = 'عذراً، حدث خطأ ما. الرجاء المحاولة مرة أخرى.';
       setMessages(prev =>
         prev.map(msg =>
-          msg.id === assistantMessage.id
+          msg.id === assistantMessageId
             ? { ...msg, content: errorMessageContent }
             : msg
         )
@@ -120,57 +129,51 @@ export function VirtualAssistant() {
   }
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }, [messages, isLoading]);
+    // A small delay ensures the new message is rendered before scrolling
+    setTimeout(() => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+          top: scrollAreaRef.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }, 100);
+  }, [messages]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
         <div className="space-y-4">
-          {messages.map((message, index) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
                 'flex items-start gap-3',
-                message.role === 'user' ? 'justify-end' : 'justify-start'
+                message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
               )}
             >
-              {message.role === 'assistant' && (
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    <Bot className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className={cn(message.role === 'assistant' && 'bg-primary text-primary-foreground')}>
+                  {message.role === 'assistant' ? <Bot className="h-5 w-5" /> : <User className="h-5 w-5" />}
+                </AvatarFallback>
+              </Avatar>
               <div
                 className={cn(
-                  'max-w-[75%] rounded-lg p-3 text-sm',
+                  'max-w-[75%] rounded-lg p-3 text-sm whitespace-pre-wrap',
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
                 )}
               >
-                <p>{message.content}</p>
+                {message.content}
                  {isLoading && message.role === 'assistant' && !message.content && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
                     <Skeleton className="h-3 w-3 rounded-full animate-bounce [animation-delay:-0.3s]" />
                     <Skeleton className="h-3 w-3 rounded-full animate-bounce [animation-delay:-0.15s]" />
                     <Skeleton className="h-3 w-3 rounded-full animate-bounce" />
                   </div>
                  )}
               </div>
-              {message.role === 'user' && (
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    <User className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
-              )}
             </div>
           ))}
         </div>
@@ -179,8 +182,12 @@ export function VirtualAssistant() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex items-start space-x-2 rtl:space-x-reverse"
+            className="flex items-start gap-2"
           >
+            <Button type="submit" disabled={isLoading} size="icon">
+              <Send className="h-4 w-4" />
+              <span className="sr-only">إرسال</span>
+            </Button>
             <FormField
               control={form.control}
               name="question"
@@ -192,16 +199,13 @@ export function VirtualAssistant() {
                       {...field}
                       disabled={isLoading}
                       autoComplete="off"
+                      dir="rtl"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isLoading} size="icon">
-              <Send className="h-4 w-4" />
-              <span className="sr-only">إرسال</span>
-            </Button>
           </form>
         </Form>
       </div>
