@@ -11,7 +11,7 @@ export async function askVirtualAssistant(
   }
   try {
     const { stream } = ai.generateStream({
-      model: 'googleai/gemini-2.5-flash',
+      model: 'googleai/gemini-1.5-flash',
       prompt: `You are a helpful assistant that answers questions about Hagaaty and Google Ads. Keep your answers concise and in Arabic.
 
   Hagaaty is a service that helps users manage their Google Ads campaigns.
@@ -33,7 +33,8 @@ export async function askVirtualAssistant(
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
           }
-        } catch (e) {
+        } catch (e: any) {
+            console.error('Error during stream processing:', e);
             const errorMessage = 'عذراً، حدث خطأ أثناء معالجة طلبك. الرجاء المحاولة مرة أخرى لاحقاً.';
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`));
         } finally {

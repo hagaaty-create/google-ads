@@ -25,7 +25,7 @@ export const answerUserQuestions = ai.defineFlow(
   },
   async (input) => {
     const {stream, response} = ai.generateStream({
-      model: 'googleai/gemini-2.5-flash',
+      model: 'googleai/gemini-1.5-flash',
       prompt: `You are a helpful assistant that answers questions about Hagaaty and Google Ads. Keep your answers concise and in Arabic.
 
   Hagaaty is a service that helps users manage their Google Ads campaigns.
