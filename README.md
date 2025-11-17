@@ -1,20 +1,12 @@
+# Hagaaty AI Landing
+
 This is a Next.js starter project for Hagaaty AI Landing.
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
 
 ## Pushing to GitHub
 
-Here are the commands to push your code to your GitHub repository from your command line (CMD).
-
 ### For the first time
+
+Use these commands to push your code to GitHub.
 
 ```bash
 git remote add origin https://github.com/hagaaty-create/google-ads.git
