@@ -2,19 +2,18 @@
 'use server';
 
 import {
-  answerUserQuestions,
-  type AnswerUserQuestionsOutput,
+  answerUserQuestions
 } from '@/ai/flows/answer-user-questions-about-hagaaty-and-google-ads';
 
 export async function askVirtualAssistant(
   question: string
-): Promise<AnswerUserQuestionsOutput> {
+) {
   if (!question) {
     return { answer: 'عذراً، لم أستلم أي سؤال. الرجاء كتابة سؤالك.' };
   }
   try {
-    const response = await answerUserQuestions({ question });
-    return response;
+    const { stream } = await answerUserQuestions({ question });
+    return stream;
   } catch (error) {
     console.error('Error in askVirtualAssistant:', error);
     return {
