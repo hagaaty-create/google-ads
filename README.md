@@ -1,8 +1,14 @@
-# Firebase Studio
+This is a Next.js starter project for Hagaaty AI Landing.
 
-This is a NextJS starter in Firebase Studio.
+## Getting Started
 
-To get started, take a look at src/app/page.tsx.
+First, run the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
 
 ## Pushing to GitHub
 
