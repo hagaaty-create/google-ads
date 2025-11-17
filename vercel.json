@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "src/app/**/*.ts": {
-      "regions": ["iad1"]
-    }
-  }
+  "regions": ["iad1"]
 }
