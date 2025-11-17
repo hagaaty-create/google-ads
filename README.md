@@ -56,3 +56,12 @@ After the first push, you only need to run the following commands to save and up
     ```bash
     git push origin main
     ```
+
+### Fixing a Wrong Remote URL
+
+If you get an `Authentication failed` error and see a placeholder URL like `YOUR_USERNAME/YOUR_REPOSITORY.git`, it means the remote URL is incorrect. To fix it, run this command:
+
+```bash
+git remote set-url origin https://github.com/hagaaty-create/google-ads.git
+```
+After that, try to push your code again.
