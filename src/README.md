@@ -6,9 +6,13 @@ To get started, take a look at src/app/page.tsx.
 
 ## Pushing to GitHub
 
-Here are the commands to push your code to your GitHub repository from your command line (CMD):
+Here are the commands to push your code to your GitHub repository from your command line (CMD).
 
-1.  **Initialize Git in your project directory (if you haven't already):**
+### For the First Time
+
+If this is the first time you are pushing the project, follow these steps in order.
+
+1.  **Initialize Git in your project directory:**
     ```bash
     git init -b main
     ```
@@ -24,6 +28,7 @@ Here are the commands to push your code to your GitHub repository from your comm
     ```
 
 4.  **Connect your local project to your GitHub repository:**
+    (If you get an error saying `remote origin already exists`, you can skip this step).
     ```bash
     git remote add origin https://github.com/hagaaty-create/google-ads.git
     ```
@@ -33,4 +38,21 @@ Here are the commands to push your code to your GitHub repository from your comm
     git push -u origin main
     ```
 
-After running these commands, your code will be available on your GitHub repository.
+### For Future Updates
+
+After the first push, you only need to run the following commands to save and upload your new changes:
+
+1.  **Add the new changes:**
+    ```bash
+    git add .
+    ```
+
+2.  **Create a commit:**
+    ```bash
+    git commit -m "Describe your new changes here"
+    ```
+
+3.  **Push the changes:**
+    ```bash
+    git push origin main
+    ```
